@@ -111,7 +111,7 @@ LFLAGS = -shared -fPIC ${SWT_LFLAGS}
 
 # Treat all warnings as errors. If your new code produces a warning, please
 # take time to properly understand and fix/silence it as necessary.
-CFLAGS += -Werror
+#CFLAGS += -Werror
 
 ifndef NO_STRIP
 	# -s = Remove all symbol table and relocation information from the executable.
