@@ -345,7 +345,7 @@ public void test_Constructor_multipleInstantiationsInDifferentShells() {
 	final int numberOfBrowsers = 5;
 	for (int i = 0; i < numberOfBrowsers; i++) {
 		Shell browserShell = new Shell(Display.getCurrent());
-		Browser browser = createBrowser(browserShell, SWT.EDGE);
+		Browser browser = createBrowser(browserShell, swtBrowserSettings);
 		assertFalse(browser.isDisposed());
 		browser.dispose();
 		assertTrue(browser.isDisposed());
@@ -396,7 +396,7 @@ private class EdgeBrowserApplication extends Thread {
 
 @Test
 public void test_Constructor_multipleInstantiationsInDifferentThreads() {
-	assumeTrue("test case is only relevant on Windows", SwtTestUtil.isWindows);
+	assumeTrue("This test is intended for Edge only", isEdge);
 
 	int numberOfApplication = 5;
 	List<EdgeBrowserApplication> browserApplications = new ArrayList<>();
@@ -514,14 +514,14 @@ public void test_CloseWindowListener_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_CloseWindowListener_addWithNullArg() {
-	browser.addCloseWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addCloseWindowListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_CloseWindowListener_removeWithNullArg() {
-	browser.removeCloseWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeCloseWindowListener(null));
 }
 
 @Test
@@ -554,14 +554,14 @@ public void test_LocationListener_adapter_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_LocationListener_addWithNullArg() {
-	browser.addLocationListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addLocationListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_LocationListener_removeWithNullArg() {
-	browser.removeLocationListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeLocationListener(null));
 }
 
 @Test
@@ -806,14 +806,14 @@ public void test_OpenWindowListener_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_OpenWindowListener_addWithNulArg() {
-	browser.addOpenWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addOpenWindowListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_OpenWindowListener_removeWithNullArg() {
-	browser.removeOpenWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeOpenWindowListener(null));
 }
 
 @Test
@@ -967,14 +967,14 @@ public void test_ProgressListener_newListener_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_ProgressListener_addWithNullArg() {
-	browser.addProgressListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addProgressListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_ProgressListener_removeWithNullArg() {
-	browser.removeProgressListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeProgressListener(null));
 }
 
 @Test
@@ -1013,14 +1013,14 @@ public void test_ProgressListener_completed_Called() {
 	assertTrue(passed);
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_StatusTextListener_addWithNull() {
-	browser.addStatusTextListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addStatusTextListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_StatusTextListener_removeWithNullArg() {
-	browser.removeStatusTextListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeStatusTextListener(null));
 }
 
 @Test
@@ -1104,14 +1104,14 @@ public void test_TitleListener_addListener_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_TitleListener_addwithNull() {
-	browser.addTitleListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addTitleListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_TitleListener_removeWithNullArg() {
-	browser.removeTitleListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeTitleListener(null));
 }
 
 @Test
@@ -1298,14 +1298,14 @@ public void test_VisibilityWindowListener_newListener_closeShell() {
 	shell.close();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_VisibilityWindowListener_addWithNull() {
-	browser.addVisibilityWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.addVisibilityWindowListener(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_VisibilityWindowListener_removeWithNullArg() {
-	browser.removeVisibilityWindowListener(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.removeVisibilityWindowListener(null));
 }
 
 @Test
@@ -1457,14 +1457,14 @@ public void test_back() {
 	assertFalse(result);
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_setTextNull() {
-	browser.setText(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.setText(null));
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_setUrlWithNullArg() {
-	browser.setUrl(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.setUrl(null));
 }
 
 
@@ -1831,9 +1831,9 @@ public void test_stop() {
 	browser.stop();
 }
 
-@Test(expected = IllegalArgumentException.class)
+@Test
 public void test_execute_withNullArg() {
-	browser.execute(null);
+	assertThrows(IllegalArgumentException.class, () -> browser.execute(null));
 }
 
 /**
@@ -2847,12 +2847,11 @@ private static Set<Entry<String, String>> getPropertiesSafe() {
 private static List<String> getOpenedDescriptors() {
 	List<String> paths = new ArrayList<>();
 	Path fd = Paths.get("/proc/self/fd/");
-	try(DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fd)){
-		directoryStream.forEach(f -> {
-			try {
-				paths.add(Files.isSymbolicLink(f)? Files.readSymbolicLink(f).toString() : f.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
+	try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fd)) {
+		directoryStream.forEach(path -> {
+			String resolvedPath = resolveSymLink(path);
+			if (isTestRelatedFileDescriptor(resolvedPath)) {
+				paths.add(resolvedPath);
 			}
 		});
 	} catch (IOException e1) {
@@ -2865,6 +2864,22 @@ private static List<String> getOpenedDescriptors() {
 	return paths;
 }
 
+private static boolean isTestRelatedFileDescriptor(String fileDescriptorPath) {
+	// Do not consider file descriptors of Maven artifacts that are currently opened
+	// by other Maven plugins executed in parallel build (such as parallel
+	// compilation of the swt.tools bundle etc.)
+	return fileDescriptorPath != null && !fileDescriptorPath.contains(".m2")
+			&& !fileDescriptorPath.contains("target/classes");
+}
+
+private static String resolveSymLink(Path path) {
+	try {
+		return Files.isSymbolicLink(path) ? Files.readSymbolicLink(path).toString() : path.toString();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	return null;
+}
 
 private static void processUiEvents() {
 	Display display = Display.getCurrent();
