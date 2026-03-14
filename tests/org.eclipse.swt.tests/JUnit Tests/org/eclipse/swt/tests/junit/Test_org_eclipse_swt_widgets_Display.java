@@ -1358,13 +1358,14 @@ public void test_setSynchronizerLorg_eclipse_swt_widgets_Synchronizer() {
 @Test
 public void test_sleep() {
 	final Display display = new Display();
+	Thread wakeThread = null;
+	Thread eventThread = null;
 	try {
-		Thread thread;
 		boolean eventQueued;
 
 		// Ensure event queue is empty, otherwise sleep() will just return.
 		while(display.readAndDispatch()) {}
-		thread = new Thread() {
+		wakeThread = new Thread() {
 			@Override
 			public void run() {
 				try {
@@ -1373,17 +1374,23 @@ public void test_sleep() {
 				} catch (InterruptedException ex) {
 				}
 				// Use wake() to revive from sleep().
-				display.wake();
+				try {
+					display.wake();
+				} catch (SWTException e) {
+					if (e.code != SWT.ERROR_DEVICE_DISPOSED) {
+						throw e;
+					}
+				}
 			}
 		};
-		thread.start();
+		wakeThread.start();
 		// Note that sleep seems to always return true, at least
 		// on Windows, since wake() uses a null event.
 		eventQueued = display.sleep();
 
 		// Ensure event queue is empty, otherwise sleep() will just return.
 		while(display.readAndDispatch()) {}
-		thread = new Thread() {
+		eventThread = new Thread() {
 			@Override
 			public void run() {
 				try {
@@ -1392,17 +1399,34 @@ public void test_sleep() {
 				} catch (InterruptedException ex) {
 				}
 				// Cause OS to generate an event to revive from sleep().
-				display.syncExec(() -> {
-					Shell s = new Shell(display);
-					s.open();
-					s.dispose();
-				});
+				try {
+					display.syncExec(() -> {
+						Shell s = new Shell(display);
+						s.open();
+						s.dispose();
+					});
+				} catch (SWTException e) {
+					if (e.code != SWT.ERROR_DEVICE_DISPOSED) {
+						throw e;
+					}
+				}
 			}
 		};
-		thread.start();
+		eventThread.start();
 		eventQueued = display.sleep();
 		assertTrue(eventQueued);
 	} finally {
+		try {
+			if (wakeThread != null) {
+				wakeThread.join(5000);
+			}
+			if (eventThread != null) {
+				eventThread.join(5000);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			fail("Interrupted while waiting for test helper threads to complete");
+		}
 		display.dispose();
 	}
 }
